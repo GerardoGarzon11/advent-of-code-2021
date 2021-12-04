@@ -23,11 +23,25 @@ class Game:
         self.draws = list(map(int, draws.split(",")))
 
     def find_best_board(self):
-        """Runs the Bing rounds and checks for a winner after each one"""
+        """Runs the Bingo rounds and checks for a winner after each one"""
         for draw in self.draws:
             self.call_a_draw(draw)
             if self.check_for_winner(draw):
                 break
+
+    def find_worst_board(self):
+        """Runs the Bingo rounds and checks for the board that would win last"""
+        for draw in self.draws:
+            self.remove_winning_boards()
+            self.call_a_draw(draw)
+            if len(self.boards) == 1 and self.boards[0].winner:
+                self.check_for_winner(draw)
+
+    def remove_winning_boards(self):
+        """Removes from the game all the winning boards"""
+        for board in self.boards:
+            if board.winner:
+                self.boards.remove(board)
 
     def call_a_draw(self, draw: int) -> None:
         """Checks if the drawn number exists on the boards
@@ -132,7 +146,7 @@ class Board:
 if __name__ == "__main__":
     game = Game()
 
-    with open("/Users/gerardo.garzon/CodeGym/AdventOfCode/input4.txt", "r") as f:
+    with open("input4.txt", "r") as f:
         lines = f.readlines()
 
     current_board = []
@@ -148,3 +162,4 @@ if __name__ == "__main__":
             current_board = []
 
     game.find_best_board()
+    game.find_worst_board()
