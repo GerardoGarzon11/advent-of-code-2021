@@ -1,60 +1,44 @@
 """--- Day 6: Lanternfish ---
 """
 
-from dataclasses import dataclass
+
+def adjust_new_fishes_list(new_fishes: list, newborns: int) -> list:
+    new_fishes[0] = new_fishes[1]
+    new_fishes[1] = new_fishes[2]
+    new_fishes[2] = newborns
+
+    return new_fishes
 
 
-@dataclass
-class Lanternfish:
-    """Represents a lanternfish and its internal cycles"""
+def adjust_fishes_list(fishes, entering):
+    tmp = fishes[0]
+    for x in range(0, len(fishes) - 1):
+        fishes[x] = fishes[x + 1]
 
-    newborn: bool = True
-    timer: int = 8
+    fishes[-1] = tmp + entering
 
-    def adjust_timer(self):
-        self.timer -= 1
-        if self.timer == -1:
-            self.timer = 6
-            self.newborn = False
-
-    def create_new_lanternfish(self):
-        if self.timer == 6 and not self.newborn:
-            return True
-
-        return False
+    return fishes
 
 
 def get_number_of_lanternfish(timers: list, days: int) -> int:
-    """Returns the number of lanternfish after {days}
-
-    Args:
-        timers (list): [Timers for each lanternfish]
-        days (int): [Number of days]
-
-    Returns:
-        int: [Final number of lanternfish]
-    """
-    fishes = []
+    fishes_per_day = [0] * 7
     for t in timers:
-        fishes.append(Lanternfish(newborn=False, timer=t))
+        fishes_per_day[t] += 1
 
-    new_fishes = []
+    # tracks fishes 6, 7 and 8 days away from breeding
+    # once a fish reaches 6, it is incorporated to the count in {fishes_per_day}
+    new_fishes = [0] * 3
+
     for day in range(0, days):
-        fishes += new_fishes
-        new_fishes.clear()
-        for fish in fishes:
-            fish.adjust_timer()
+        new_fishes = adjust_new_fishes_list(new_fishes, newborns=fishes_per_day[0])
+        fishes_per_day = adjust_fishes_list(fishes_per_day, entering=new_fishes[0])
 
-            if fish.create_new_lanternfish():
-                new_fishes.append(Lanternfish())
-
-    fishes += new_fishes
-
-    return len(fishes)
+    return sum(fishes_per_day) + sum(new_fishes[1:])
 
 
 if __name__ == "__main__":
-    with open("input6_test.txt") as f:
+    with open("input6.txt") as f:
         timers = list(map(int, f.readline().split(",")))
 
     print(f"The result for Part 1 is: {get_number_of_lanternfish(timers, days=80)}")
+    print(f"The result for Part 2 is: {get_number_of_lanternfish(timers, days=256)}")
