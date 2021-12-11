@@ -15,15 +15,31 @@ def increase_energy_of_adjacent_octupuses(grid: list, position: tuple) -> list:
     x = position[0]
     y = position[1]
 
+    to_update = [
+        [x - 1, y - 1],
+        [x - 1, y],
+        [x - 1, y + 1],
+        [x, y - 1],
+        [x, y + 1],
+        [x + 1, y - 1],
+        [x + 1, y],
+        [x + 1, y + 1],
+    ]
+
     try:
-        grid[x - 1][y - 1] += 1 if grid[x - 1][y - 1] != -1 else 0
-        grid[x - 1][y] += 1 if grid[x - 1][y] != -1 else 0
-        grid[x - 1][y + 1] += 1 if grid[x - 1][y + 1] != -1 else 0
-        grid[x][y - 1] += 1 if grid[x][y - 1] != -1 else 0
-        grid[x][y + 1] += 1 if grid[x][y + 1] != -1 else 0
-        grid[x + 1][y - 1] += 1 if grid[x + 1][y - 1] != -1 else 0
-        grid[x + 1][y] += 1 if grid[x + 1][y] != -1 else 0
-        grid[x + 1][y + 1] += 1 if grid[x + 1][y + 1] != -1 else 0
+        for p in to_update:
+            grid[p[0]][p[1]] += (
+                1 if grid[p[0]][p[1]] != -1 and grid[p[0]][p[1]] < 10 else 0
+            )
+
+        grid[x][y] += 1
+
+        for p in to_update:
+            if grid[p[0]][p[1]] == 10:
+                grid = increase_energy_of_adjacent_octupuses(
+                    grid, position=(p[0], p[1])
+                )
+
     except ValueError:
         print("Index does not exist")
 
@@ -67,7 +83,7 @@ def get_number_of_flashes(grid: list, steps: int) -> int:
                 # Skip helper cells
                 if grid[x][y] == -1:
                     continue
-                if grid[x][y] > 9:
+                if grid[x][y] == 10:
                     grid = increase_energy_of_adjacent_octupuses(grid, position=(x, y))
 
         step_results = count_flashes_and_adjust_energy_levels(grid)
@@ -82,7 +98,7 @@ def get_number_of_flashes(grid: list, steps: int) -> int:
 
 if __name__ == "__main__":
     octopus_grid = []
-    with open("input11_test.txt") as f:
+    with open("input11.txt") as f:
         for line in f:
             octopus_grid.append(list(map(int, list(line.strip()))))
 
