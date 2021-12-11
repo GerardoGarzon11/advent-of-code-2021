@@ -1,6 +1,8 @@
 """--- Day 11: Dumbo Octopus ---
 """
 
+import copy
+
 
 def increase_by_one(x):
     return x + 1 if x != -1 else x
@@ -59,9 +61,10 @@ def count_flashes_and_adjust_energy_levels(grid):
     return (grid, flashes)
 
 
-def get_number_of_flashes(grid: list, steps: int) -> int:
+def get_number_of_flashes(grid: list, steps: int, until_sync=False) -> int:
 
     flashes = 0
+    start_steps = steps
 
     # Add helper cells
     for x in range(len(grid)):
@@ -91,6 +94,9 @@ def get_number_of_flashes(grid: list, steps: int) -> int:
         grid = step_results[0]
         flashes += step_results[1]
 
+        if step_results[1] == (len(grid) - 2) * (len(grid[1]) - 2):
+            return start_steps - steps + 1
+
         steps -= 1
 
     return flashes
@@ -103,5 +109,8 @@ if __name__ == "__main__":
             octopus_grid.append(list(map(int, list(line.strip()))))
 
     print(
-        f"The total number of flashes after a 100 steps is: {get_number_of_flashes(octopus_grid, 100)}"
+        f"The total number of flashes after a 100 steps is: {get_number_of_flashes(copy.deepcopy(octopus_grid), 100)}"
+    )
+    print(
+        f"The first step during all flashes sync is: {get_number_of_flashes(octopus_grid, 1000, until_sync=True)}"
     )
