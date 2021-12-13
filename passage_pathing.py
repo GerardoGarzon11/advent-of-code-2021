@@ -5,6 +5,8 @@ from string import ascii_lowercase as lower_alphabet
 
 POINT_TYPES = {"START": 0, "SMALL": 1, "BIG": 2, "END": 3}
 
+part_2_rule = False
+
 
 class Node:
     def __init__(self, name, type="start"):
@@ -39,6 +41,20 @@ def get_number_of_small_caves_in_path(path):
     return small_cave_count
 
 
+def func(path):
+    cave_set = set(path)
+    cave_counts = {}
+    for cave in cave_set:
+        cave_counts[cave] = path.count(cave)
+
+    for key in cave_counts:
+        if get_point_type(key) == 1:
+            if cave_counts[key] > 1:
+                return False
+
+    return True
+
+
 def travel(node: Node, path: list = []):
     path.append(node.name)
     paths = 0
@@ -46,19 +62,27 @@ def travel(node: Node, path: list = []):
         # A small node cannot be twice visited
         if conn.type == 2 or (conn.type == 1 and conn.name not in path):
             paths += travel(conn, path.copy())
+        elif part_2_rule and (
+            conn.type == 2
+            or (conn.type == 1 and conn.name not in path)
+            or (conn.type == 1 and func(path))
+        ):
+            paths += travel(conn, path.copy())
         elif conn.type == 3:
             # Process continues even if an end is found, so it's added and removed
             path.append(conn.name)
-            print(path)
+            # print(path)
             path.pop()
-            # if get_number_of_small_caves_in_path(path) < 2:
-            paths += 1
+            if get_number_of_small_caves_in_path(path) < 2 and not part_2_rule:
+                paths += 1
+            else:
+                paths += 1
         else:
             continue
     return paths
 
 
-def solve_part_1(nodes: dict) -> int:
+def solve_passage_pathing(nodes: dict) -> int:
     return travel(nodes["start"])
 
 
@@ -80,4 +104,10 @@ if __name__ == "__main__":
             nodes[point_x].add_connection(nodes[point_y])
             nodes[point_y].add_connection(nodes[point_x])
 
-    print(f"The solution for Passage Pathing, Part 1 is: {solve_part_1(nodes)}")
+    print(
+        f"The solution for Passage Pathing, Part 1 is: {solve_passage_pathing(nodes)}"
+    )
+    part_2_rule = True
+    print(
+        f"The solution for Passage Pathing, Part 2 is: {solve_passage_pathing(nodes)}"
+    )
