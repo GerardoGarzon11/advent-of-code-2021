@@ -22,7 +22,16 @@ def fold_up(paper: list, fold_along: int) -> list:
     down = paper[(fold_along + 1) :]
     folded = []
 
-    for l in range(fold_along - 1):
+    if len(up) != len(down):
+        diff = abs(len(up) - len(down))
+        if len(up) < len(down):
+            for x in range(diff):
+                up.insert(0, ["."] * len(up[0]))
+        else:
+            for x in range(diff):
+                down.append(["."] * len(down[0]))
+
+    for l in range(fold_along):
         if l >= len(up) or l >= len(down):
             if l > len(up):
                 down_line = down[-1 - l]
@@ -82,6 +91,9 @@ def solve_part_1(dimensions: list, instructions: list, dots: list) -> int:
         print(
             f"There are {count_visible_dots(paper)} visible after folding at {instruction}.\n"
         )
+
+    for line in paper:
+        print("".join(line))
 
     return count_visible_dots(paper)
 
