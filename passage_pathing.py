@@ -22,6 +22,14 @@ class Node:
 
 
 def get_point_type(name: str) -> int:
+    """Returns the type of cave/point
+
+    Args:
+        name (str): [Name of cave/point]
+
+    Returns:
+        int: [Type of cave/point]
+    """
     if name == "start":
         return POINT_TYPES["START"]
     elif name == "end":
@@ -33,6 +41,14 @@ def get_point_type(name: str) -> int:
 
 
 def get_number_of_small_caves_in_path(path):
+    """Returns the number of small (lowercase) caves in path
+
+    Args:
+        path ([type]): [List of caves in path]
+
+    Returns:
+        [type]: [Number of small caves in path]
+    """
     small_cave_count = 0
     for p in path:
         if p not in ["start", "end"]:
@@ -41,7 +57,15 @@ def get_number_of_small_caves_in_path(path):
     return small_cave_count
 
 
-def func(path):
+def has_small_caves_occurring_more_than_once(path: list) -> bool:
+    """Validates if there are small caves being visited more than once in the path
+
+    Args:
+        path ([list]): [Current path]
+
+    Returns:
+        [bool]: [True if there are small caves appearing twice in path. False otherwise.]
+    """
     cave_set = set(path)
     cave_counts = {}
     for cave in cave_set:
@@ -50,12 +74,22 @@ def func(path):
     for key in cave_counts:
         if get_point_type(key) == 1:
             if cave_counts[key] > 1:
-                return False
+                return True
 
-    return True
+    return False
 
 
-def travel(node: Node, path: list = []):
+def travel(node: Node, path: list = []) -> int:
+    """Traverses recursively the cave paths
+
+    Args:
+        node (Node): [Current cave]
+        path (list, optional): [Current travelled path]. Defaults to [].
+
+    Returns:
+        [type]: [Depending on part_2_rule value: returns a number of paths or a number of
+        small caves]
+    """
     path.append(node.name)
     paths = 0
     for conn in node.connections:
@@ -65,7 +99,7 @@ def travel(node: Node, path: list = []):
         elif part_2_rule and (
             conn.type == 2
             or (conn.type == 1 and conn.name not in path)
-            or (conn.type == 1 and func(path))
+            or (conn.type == 1 and not has_small_caves_occurring_more_than_once(path))
         ):
             paths += travel(conn, path.copy())
         elif conn.type == 3:
@@ -83,6 +117,14 @@ def travel(node: Node, path: list = []):
 
 
 def solve_passage_pathing(nodes: dict) -> int:
+    """Starts the travelling process
+
+    Args:
+        nodes (dict): [List of nodes]
+
+    Returns:
+        int: [Result of the process]
+    """
     return travel(nodes["start"])
 
 
