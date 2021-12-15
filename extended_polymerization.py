@@ -50,23 +50,17 @@ def solve(pair: str, element: str, rem_steps: int) -> int:
     Returns:
         int: [description]
     """
-    if pair + f"{rem_steps}" in solution.keys():
-        return solution[pair + f"{rem_steps}"]
+    if pair + f"{rem_steps}" + element in solution.keys():
+        return solution[pair + f"{rem_steps}" + element]
 
     if rem_steps == 0:
-        solution[pair + f"{rem_steps}"] = 1 if element in pair[1] else 0
+        solution[pair + f"{rem_steps}" + element] = 1 if element in pair[1] else 0
         return 1 if element in pair[1] else 0
     else:
-        solution[pair + f"{rem_steps}"] = solve(
+        solution[pair + f"{rem_steps}" + element] = solve(
             pair[0] + global_rules[pair], element, rem_steps - 1
         ) + solve(global_rules[pair] + pair[1], element, rem_steps - 1)
-        return solution[pair + f"{rem_steps}"]
-
-
-def reset_global_solution() -> None:
-    """Resets the global dictionary used for memoization"""
-    global solution
-    solution = {}
+        return solution[pair + f"{rem_steps}" + element]
 
 
 def grow_polymer(template: str, rules: dict, steps: int = 10) -> dict:
@@ -83,7 +77,6 @@ def grow_polymer(template: str, rules: dict, steps: int = 10) -> dict:
     letter_counts = get_counts_dictionary(set(rules.values()))
     for letter in letter_counts.keys():
         sum_ = 0
-        reset_global_solution()
         for i in range(len(template) - 1):
             pair = template[i : i + 2]
             sum_ += solve(pair, letter, rem_steps=steps)
