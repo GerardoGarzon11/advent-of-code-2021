@@ -18,6 +18,7 @@ import sys
 
 min_path = -1
 current_best = -1
+traverse_stack = {}
 
 
 class Node:
@@ -34,10 +35,16 @@ class Node:
         self.visited = False
 
     def get_sorted_nodes(self):
+        """Returns a dictiionary of nodes sorted in ascending order by
+        current node risdk + node risk
+
+        Returns:
+            [OrderedDict]: [Dict of sorted nodes]
+        """
         nodes = {}
         for n in [self.left, self.right, self.up, self.down]:
             if n is not None:
-                nodes[f"{n.risk}{n.id}"] = n
+                nodes[f"{n.risk + self.min}{n.id}"] = n
         return OrderedDict(sorted(nodes.items()))
 
 
@@ -82,36 +89,39 @@ def build_node_grid() -> Node:
 
 
 def traverse(node: Node, start: bool = False, prev: int = 0) -> int:
-    global current_best
     node.visited = True
 
-    with open("log.txt", "a") as f:
-        changed = False
-        min_proposal = prev + node.risk
+    if start:
+        node.min = 0
 
-        if start:
-            node.min = prev
+        sorted_nodes = node.get_sorted_nodes()
+        for next_candidate_node in sorted_nodes.values():
+
+            traverse(next_candidate_node, prev=node.min)
+    elif node.visited and node.min < prev + node.risk:
+        return -1
+    else:
+        if node.min > prev + node.risk:
+            node.min = prev + node.risk
+
+            # last node
+            if node.right is None and node.down is None:
+                print(node.min)
+
+            else:  # Next steps
+                sorted_nodes = node.get_sorted_nodes()
+                for next_candidate_node in sorted_nodes.values():
+                    traverse(next_candidate_node, prev=node.min)
+
+            return 0
         else:
-            if node.min > prev + node.risk:
-                node.min = min_proposal
-                changed = True
-
-        if node.down is None and node.right is None:  # you reached the last_one
-            if current_best > node.min or current_best == -1:
-                current_best = node.min
-                print(current_best)
-        elif changed or start:
-            sorted_nodes = node.get_sorted_nodes()
-            for n in sorted_nodes.values():
-                if (
-                    node.min + n.risk < current_best
-                    or current_best == -1
-                    and n.min > node.min + n.risk
-                ):
-                    traverse(n, prev=node.min)
+            return -1
 
 
 def solve_part_1(start_node: Node) -> int:
+
+    while traverse_stack.values():
+        # run next best
     traverse(node=start_node, start=True)
     print(current_best)
 
