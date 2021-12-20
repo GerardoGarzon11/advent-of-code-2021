@@ -12,8 +12,12 @@
 # 8 - Condition for up direction was checking against the node, not the existance of the id in visited
 # 9 - Traverse algorithm not working
 
+from collections import OrderedDict
+
+import sys
+
 min_path = -1
-solutions = {}
+current_best = -1
 
 
 class Node:
@@ -26,6 +30,15 @@ class Node:
         self.up = up
         self.down = down
         self.risk = risk
+        self.min = sys.maxsize
+        self.visited = False
+
+    def get_sorted_nodes(self):
+        nodes = {}
+        for n in [self.left, self.right, self.up, self.down]:
+            if n is not None:
+                nodes[f"{n.risk}{n.id}"] = n
+        return OrderedDict(sorted(nodes.items()))
 
 
 def build_node_grid() -> Node:
@@ -68,54 +81,39 @@ def build_node_grid() -> Node:
     return start_node
 
 
-def traverse(node: Node, visited: list, risk: list, start: bool = False) -> int:
-    visited.append(node.id)
-    if start:
-        risk.append(0)
-    else:
-        risk.append(node.risk)
+def traverse(node: Node, start: bool = False, prev: int = 0) -> int:
+    global current_best
+    node.visited = True
 
-    global min_path
+    with open("log.txt", "a") as f:
+        changed = False
+        min_proposal = prev + node.risk
 
-    if sum(risk) > min_path and min_path != -1:
-        pass
-
-    else:
-
-        if node.down is None and node.right is None:
-            print(
-                f"Reached bottom right after visiting:\n{len(visited)} nodes and the total risk is:\n{sum(risk)}"
-            )
-            if min_path == -1 or min_path > sum(risk):
-                min_path = sum(risk)
-
+        if start:
+            node.min = prev
         else:
-            if node.left is not None:
-                if node.left.id not in visited:
-                    traverse(node.left, visited, risk)
-                    visited.pop()
-                    risk.pop()
-            if node.up is not None:
-                if node.up.id not in visited:
-                    traverse(node.up, visited, risk)
-                    visited.pop()
-                    risk.pop()
-            if node.right is not None:
-                if node.right.id not in visited:
-                    traverse(node.right, visited, risk)
-                    visited.pop()
-                    risk.pop()
-            if node.down is not None:
-                if node.down.id not in visited:
-                    traverse(node.down, visited, risk)
-                    visited.pop()
-                    risk.pop()
+            if node.min > prev + node.risk:
+                node.min = min_proposal
+                changed = True
+
+        if node.down is None and node.right is None:  # you reached the last_one
+            if current_best > node.min or current_best == -1:
+                current_best = node.min
+                print(current_best)
+        elif changed or start:
+            sorted_nodes = node.get_sorted_nodes()
+            for n in sorted_nodes.values():
+                if (
+                    node.min + n.risk < current_best
+                    or current_best == -1
+                    and n.min > node.min + n.risk
+                ):
+                    traverse(n, prev=node.min)
 
 
 def solve_part_1(start_node: Node) -> int:
-    visited = []
-    risk = []
-    traverse(node=start_node, visited=visited, risk=risk, start=True)
+    traverse(node=start_node, start=True)
+    print(current_best)
 
 
 if __name__ == "__main__":
